@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>非公式・令和の虎データベース 🐯csv 更新2</title>
+  <title>非公式・令和の虎データベース 🐯csv 更新3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -54,7 +54,7 @@
     fetch("data/reiwanotora.csv")
       .then(res => res.text())
       .then(csv => {
-        const results = PapaParse.parse(csv, { header: true });
+        const results = Papa.parse(csv, { header: true });
         const list = results.data;
 
         const tbody = document.querySelector(".list");
