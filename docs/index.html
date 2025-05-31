@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>非公式・令和の虎データベース</title>
+  <title>非公式・令和の虎データベース 🐯csv 更新2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -12,7 +12,11 @@
       font-family: 'Inter', sans-serif;
     }
     .hidden-template {
-      display: none;
+      color: transparent;
+      font-size: 0;
+      line-height: 0;
+      padding: 0;
+      margin: 0;
     }
   </style>
 </head>
@@ -33,13 +37,13 @@
           </tr>
         </thead>
         <tbody class="list">
-          <!-- 初期テンプレ（エラー回避用） -->
-          <tr class="hidden-template">
-            <td class="title px-3 py-2">（読み込み中）</td>
-            <td class="views px-3 py-2">0</td>
-            <td class="description px-3 py-2">---</td>
-            <td class="fetched_date px-3 py-2">----</td>
-            <td class="px-3 py-2"><a href="#" class="text-blue-600 underline">▶︎</a></td>
+          <!-- 初期テンプレ：List.jsが最低1行ないと爆発する対策 -->
+          <tr>
+            <td class="title px-3 py-2 hidden-template">テンプレ</td>
+            <td class="views px-3 py-2 hidden-template">0</td>
+            <td class="description px-3 py-2 hidden-template">読み込み中</td>
+            <td class="fetched_date px-3 py-2 hidden-template">2025-06-01</td>
+            <td class="px-3 py-2 hidden-template"><a href="#">▶︎</a></td>
           </tr>
         </tbody>
       </table>
@@ -50,11 +54,11 @@
     fetch("data/reiwanotora.csv")
       .then(res => res.text())
       .then(csv => {
-        const results = Papa.parse(csv, { header: true });
+        const results = PapaParse.parse(csv, { header: true });
         const list = results.data;
 
         const tbody = document.querySelector(".list");
-        tbody.innerHTML = ""; // 初期テンプレ削除
+        tbody.innerHTML = ""; // 初期テンプレ消去
 
         list.forEach(row => {
           if (!row.title || !row.url) return;
