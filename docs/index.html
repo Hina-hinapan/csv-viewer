@@ -2,27 +2,20 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>非公式・令和の虎データベース 🐯csv 更新3</title>
+  <title>非公式・令和の虎データベース 🐯csv 更新FIX</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
     .hidden-template {
-      color: transparent;
-      font-size: 0;
-      line-height: 0;
-      padding: 0;
-      margin: 0;
+      display: none;
     }
   </style>
 </head>
 <body class="bg-gray-100 p-6 text-gray-800">
   <div class="max-w-6xl mx-auto">
-    <h1 class="text-2xl font-bold mb-4">非公式・令和の虎データベース 🐯csv 更新3</h1>
+    <h1 class="text-2xl font-bold mb-4">非公式・令和の虎データベース 🐯csv 更新FIX</h1>
     <input class="search w-full px-4 py-2 border rounded mb-4" placeholder="キーワード検索（動画詳細から曖昧検索）"/>
 
     <div id="videos">
@@ -37,13 +30,13 @@
           </tr>
         </thead>
         <tbody class="list">
-          <!-- 初期テンプレ：List.jsが最低1行ないと爆発する対策 -->
-          <tr>
-            <td class="title px-3 py-2 hidden-template">テンプレ</td>
-            <td class="views px-3 py-2 hidden-template">0</td>
-            <td class="description px-3 py-2 hidden-template">読み込み中</td>
-            <td class="fetched_date px-3 py-2 hidden-template">2025-06-01</td>
-            <td class="px-3 py-2 hidden-template"><a href="#">▶︎</a></td>
+          <!-- List.jsエラー回避のための空行テンプレート -->
+          <tr class="hidden-template">
+            <td class="title">dummy</td>
+            <td class="views">0</td>
+            <td class="description">loading</td>
+            <td class="fetched_date">1970-01-01</td>
+            <td><a href="#">▶︎</a></td>
           </tr>
         </tbody>
       </table>
@@ -51,32 +44,40 @@
   </div>
 
   <script>
+    const tbody = document.querySelector(".list");
+
     fetch("data/reiwanotora.csv")
       .then(res => res.text())
       .then(csv => {
         const results = Papa.parse(csv, { header: true });
-        const list = results.data;
+        const data = results.data;
 
-        const tbody = document.querySelector(".list");
-        tbody.innerHTML = ""; // 初期テンプレ消去
+        // 初期テンプレート削除
+        tbody.innerHTML = "";
 
-        list.forEach(row => {
-          if (!row.title || !row.url) return;
+        let validCount = 0;
+        data.forEach(row => {
+          if (!row.title || !row.url || !row.description) return;
+
           const tr = document.createElement("tr");
           tr.className = "hover:bg-gray-50";
           tr.innerHTML = `
             <td class="title px-3 py-2">${row.title}</td>
             <td class="views px-3 py-2 text-right">${row.views}</td>
-            <td class="description px-3 py-2">${row.description?.slice(0, 60) ?? ""}…</td>
+            <td class="description px-3 py-2">${row.description.slice(0, 60)}…</td>
             <td class="fetched_date px-3 py-2">${row.fetched_date}</td>
             <td class="px-3 py-2"><a href="${row.url}" target="_blank" class="text-blue-600 underline">▶︎</a></td>
           `;
           tbody.appendChild(tr);
+          validCount++;
         });
 
-        new List("videos", {
-          valueNames: ["description"]
-        });
+        // 最低1行が存在するときだけ初期化
+        if (validCount > 0) {
+          new List("videos", {
+            valueNames: ["description"]
+          });
+        }
       });
   </script>
 </body>
