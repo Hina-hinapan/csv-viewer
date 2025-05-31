@@ -2,23 +2,44 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>CSV Viewer</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="p-6 font-sans bg-white text-gray-800">
-  <h1 class="text-2xl font-bold mb-4">CSV Viewer</h1>
-  <div id="csv-output" class="space-y-2"></div>
+  <title>非公式・令和の虎CSVビューア</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- Tailwind（CDN）+ Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800 p-6 min-h-screen">
+
+  <!-- 見出しエリア -->
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-2">非公式・令和の虎データベース</h1>
+    <p class="mb-1">このサイトは令和の虎の動画情報をまとめた非公式の実験ページです。</p>
+    <p class="mb-1">🐯 <strong>青笹社長を応援しています。</strong></p>
+    <p class="mb-6 text-sm text-gray-600">いつかマイリストを自動生成できるようにしたい…！</p>
+
+    <!-- CSV表示エリア -->
+    <div id="csv-output" class="bg-white p-4 rounded shadow-md overflow-x-auto"></div>
+  </div>
+
+  <!-- CSV読み込みスクリプト -->
   <script>
     fetch("data/mydata.csv")
       .then(res => res.text())
       .then(text => {
         const rows = text.trim().split("\n").map(r => r.split(","));
-        let html = "<table class='table-auto border border-gray-300'>";
-        rows.forEach(row => {
-          html += "<tr>";
+        let html = "<table class='min-w-full border border-gray-300 text-sm'>";
+        rows.forEach((row, i) => {
+          html += "<tr class='" + (i === 0 ? "bg-gray-200 font-semibold" : "hover:bg-gray-50") + "'>";
           row.forEach(cell => {
-            html += `<td class='border px-2 py-1'>${cell}</td>`;
+            const cellHtml = cell.startsWith("http") ? `<a href="${cell}" class="text-blue-600 underline" target="_blank">${cell}</a>` : cell;
+            html += `<td class='border px-3 py-2'>${cellHtml}</td>`;
           });
           html += "</tr>";
         });
@@ -26,5 +47,6 @@
         document.getElementById("csv-output").innerHTML = html;
       });
   </script>
+
 </body>
 </html>
