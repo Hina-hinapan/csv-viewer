@@ -1,52 +1,70 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>非公式・令和の虎CSVビューア</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Tailwind（CDN）+ Google Fonts -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>令和の虎ビューア（検索＋ソート）</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
     }
   </style>
 </head>
-<body class="bg-gray-100 text-gray-800 p-6 min-h-screen">
+<body class="bg-gray-100 p-6 text-gray-800">
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4">非公式・令和の虎データベース 🐯</h1>
+    <input id="search" type="text" placeholder="キーワード検索（タイトル/出演者など）" 
+      class="mb-4 px-4 py-2 border rounded w-full" />
 
-  <!-- 見出しエリア -->
-  <div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold mb-2">非公式・令和の虎データベース</h1>
-    <p class="mb-1">このサイトは令和の虎の動画情報をまとめた非公式の実験ページです。</p>
-    <p class="mb-1">🐯 <strong>青笹社長を応援しています。</strong></p>
-    <p class="mb-6 text-sm text-gray-600">いつかマイリストを自動生成できるようにしたい…！</p>
-
-    <!-- CSV表示エリア -->
-    <div id="csv-output" class="bg-white p-4 rounded shadow-md overflow-x-auto"></div>
+    <div id="table-wrapper">
+      <table class="min-w-full bg-white shadow-md rounded border border-gray-300 text-sm">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="px-3 py-2 cursor-pointer" data-sort="title">タイトル</th>
+            <th class="px-3 py-2 cursor-pointer" data-sort="views">再生数</th>
+            <th class="px-3 py-2">出演者</th>
+            <th class="px-3 py-2" data-sort="fetched_date">公開日</th>
+            <th class="px-3 py-2">リンク</th>
+          </tr>
+        </thead>
+        <tbody id="video-list" class="list">
+          <!-- ここにCSVデータから挿入 -->
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- CSV読み込みスクリプト -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
   <script>
-    fetch("data/mydata.csv")
+    fetch("data/reiwanotora.csv")
       .then(res => res.text())
-      .then(text => {
-        const rows = text.trim().split("\n").map(r => r.split(","));
-        let html = "<table class='min-w-full border border-gray-300 text-sm'>";
-        rows.forEach((row, i) => {
-          html += "<tr class='" + (i === 0 ? "bg-gray-200 font-semibold" : "hover:bg-gray-50") + "'>";
-          row.forEach(cell => {
-            const cellHtml = cell.startsWith("http") ? `<a href="${cell}" class="text-blue-600 underline" target="_blank">${cell}</a>` : cell;
-            html += `<td class='border px-3 py-2'>${cellHtml}</td>`;
-          });
-          html += "</tr>";
+      .then(csv => {
+        const results = Papa.parse(csv, { header: true });
+        const list = results.data;
+
+        const tbody = document.getElementById("video-list");
+        list.forEach(row => {
+          if (!row.title || !row.url) return;
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-gray-50";
+          tr.innerHTML = `
+            <td class="title px-3 py-2">${row.title}</td>
+            <td class="views px-3 py-2 text-right">${row.views}</td>
+            <td class="px-3 py-2">${row.description.slice(0, 20)}…</td>
+            <td class="fetched_date px-3 py-2">${row.fetched_date}</td>
+            <td class="px-3 py-2"><a href="${row.url}" class="text-blue-600 underline" target="_blank">▶︎</a></td>
+          `;
+          tbody.appendChild(tr);
         });
-        html += "</table>";
-        document.getElementById("csv-output").innerHTML = html;
+
+        new List("table-wrapper", {
+          valueNames: ["title", "views", "fetched_date"],
+          searchClass: "search",
+          searchColumns: ["title"]
+        });
       });
   </script>
-
 </body>
 </html>
