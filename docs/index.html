@@ -2,41 +2,50 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
+  <title>非公式・令和の虎データベース</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>令和の虎ビューア（検索＋ソート）</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
+    }
+    .hidden-template {
+      display: none;
     }
   </style>
 </head>
 <body class="bg-gray-100 p-6 text-gray-800">
   <div class="max-w-6xl mx-auto">
     <h1 class="text-2xl font-bold mb-4">非公式・令和の虎データベース 🐯</h1>
-    <input id="search" type="text" placeholder="キーワード検索（タイトル/出演者など）" 
-      class="mb-4 px-4 py-2 border rounded w-full" />
+    <input class="search w-full px-4 py-2 border rounded mb-4" placeholder="キーワード検索（動画詳細から曖昧検索）"/>
 
-    <div id="table-wrapper">
-      <table class="min-w-full bg-white shadow-md rounded border border-gray-300 text-sm">
+    <div id="videos">
+      <table class="min-w-full bg-white border border-gray-300 text-sm rounded shadow">
         <thead class="bg-gray-200">
           <tr>
-            <th class="px-3 py-2 cursor-pointer" data-sort="title">タイトル</th>
-            <th class="px-3 py-2 cursor-pointer" data-sort="views">再生数</th>
-            <th class="px-3 py-2">出演者</th>
-            <th class="px-3 py-2" data-sort="fetched_date">公開日</th>
+            <th class="px-3 py-2">タイトル</th>
+            <th class="px-3 py-2">再生数</th>
+            <th class="px-3 py-2">動画詳細</th>
+            <th class="px-3 py-2">日付</th>
             <th class="px-3 py-2">リンク</th>
           </tr>
         </thead>
-        <tbody id="video-list" class="list">
-          <!-- ここにCSVデータから挿入 -->
+        <tbody class="list">
+          <!-- 初期テンプレ（エラー回避用） -->
+          <tr class="hidden-template">
+            <td class="title px-3 py-2">（読み込み中）</td>
+            <td class="views px-3 py-2">0</td>
+            <td class="description px-3 py-2">---</td>
+            <td class="fetched_date px-3 py-2">----</td>
+            <td class="px-3 py-2"><a href="#" class="text-blue-600 underline">▶︎</a></td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
   <script>
     fetch("data/reiwanotora.csv")
       .then(res => res.text())
@@ -44,7 +53,9 @@
         const results = Papa.parse(csv, { header: true });
         const list = results.data;
 
-        const tbody = document.getElementById("video-list");
+        const tbody = document.querySelector(".list");
+        tbody.innerHTML = ""; // 初期テンプレ削除
+
         list.forEach(row => {
           if (!row.title || !row.url) return;
           const tr = document.createElement("tr");
@@ -52,17 +63,15 @@
           tr.innerHTML = `
             <td class="title px-3 py-2">${row.title}</td>
             <td class="views px-3 py-2 text-right">${row.views}</td>
-            <td class="px-3 py-2">${row.description.slice(0, 20)}…</td>
+            <td class="description px-3 py-2">${row.description?.slice(0, 60) ?? ""}…</td>
             <td class="fetched_date px-3 py-2">${row.fetched_date}</td>
-            <td class="px-3 py-2"><a href="${row.url}" class="text-blue-600 underline" target="_blank">▶︎</a></td>
+            <td class="px-3 py-2"><a href="${row.url}" target="_blank" class="text-blue-600 underline">▶︎</a></td>
           `;
           tbody.appendChild(tr);
         });
 
-        new List("table-wrapper", {
-          valueNames: ["title", "views", "fetched_date"],
-          searchClass: "search",
-          searchColumns: ["title"]
+        new List("videos", {
+          valueNames: ["description"]
         });
       });
   </script>
