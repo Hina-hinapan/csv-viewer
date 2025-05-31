@@ -1,5 +1,30 @@
-<html>
-<body>
-<h1>test</h1>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>CSV Viewer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-6 font-sans bg-white text-gray-800">
+  <h1 class="text-2xl font-bold mb-4">CSV Viewer</h1>
+  <div id="csv-output" class="space-y-2"></div>
+
+  <script>
+    fetch("data/mydata.csv")
+      .then(res => res.text())
+      .then(text => {
+        const rows = text.trim().split("\n").map(r => r.split(","));
+        let html = "<table class='table-auto border border-gray-300'>";
+        rows.forEach(row => {
+          html += "<tr>";
+          row.forEach(cell => {
+            html += `<td class='border px-2 py-1'>${cell}</td>`;
+          });
+          html += "</tr>";
+        });
+        html += "</table>";
+        document.getElementById("csv-output").innerHTML = html;
+      });
+  </script>
 </body>
 </html>
